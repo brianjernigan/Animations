@@ -9,17 +9,20 @@ public class KennyController : MonoBehaviour
 {
     private Animator _anim;
 
-    private float _moveSpeed = 5f;
+    private float _moveSpeed = 2.5f;
     private float _rotateSpeed = 10f;
     
     public bool IsWalking { get; set; }
 
+    private Rigidbody _rb;
+
     private void Awake()
     {
         _anim = GetComponent<Animator>();
+        _rb = GetComponent<Rigidbody>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         Move();
     }
@@ -31,11 +34,12 @@ public class KennyController : MonoBehaviour
 
         var movement = new Vector3(horizontalMovement, 0f, verticalMovement).normalized;
 
-        if (movement.magnitude > Mathf.Epsilon)
+        _rb.velocity = movement * _moveSpeed;
+
+        if (movement.magnitude > 0.1f)
         {
             IsWalking = true;
-            transform.Translate(movement * (_moveSpeed * Time.deltaTime), Space.World);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movement), _rotateSpeed * Time.deltaTime);
+            _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, Quaternion.LookRotation(movement), _rotateSpeed * Time.fixedDeltaTime));
         }
         else
         {
