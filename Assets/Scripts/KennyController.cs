@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 public class KennyController : MonoBehaviour
 {
     private Animator _anim;
+    [SerializeField] private DoorController _dc;
 
     private float _moveSpeed = 2.5f;
     private float _rotateSpeed = 10f;
@@ -47,5 +48,14 @@ public class KennyController : MonoBehaviour
         }
 
         _anim.SetBool("IsWalking", IsWalking);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.CompareTag("DoorTrigger") && Input.GetKeyDown(KeyCode.F) && !IsWalking)
+        {
+            _anim.SetTrigger("DoorOpen");
+            _dc.OpenDoor();
+        }
     }
 }
