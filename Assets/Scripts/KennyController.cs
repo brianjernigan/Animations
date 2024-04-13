@@ -9,19 +9,19 @@ using UnityEngine.XR;
 public class KennyController : MonoBehaviour
 {
     private Animator _anim;
+    private Rigidbody _rb;
+    
     [SerializeField] private DoorController _dc;
-
+    [SerializeField] private GameObject _doorTrigger;
+    [SerializeField] private GameObject _goldSphere;
+    
     private float _moveSpeed = 2.5f;
     private float _rotateSpeed = 10f;
 
     private bool IsWalking { get; set; }
     private bool IsSneaking { get; set; }
     private bool CanOpenDoor { get; set; }
-
-    private Rigidbody _rb;
-
-    [SerializeField] private GameObject _doorTrigger;
-
+    
     private void Awake()
     {
         _anim = GetComponent<Animator>();
@@ -107,13 +107,26 @@ public class KennyController : MonoBehaviour
         {
             CanOpenDoor = true;
         }
+
+        if (other.gameObject.CompareTag("GoldSphere"))
+        {
+            _anim.SetTrigger("Breakdance");
+            StartCoroutine(DeactivateSphere());
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.CompareTag("DoorTrigger"))
         {
-            CanOpenDoor = true;
+            CanOpenDoor = false;
         }
+    }
+
+    private IEnumerator DeactivateSphere()
+    {
+        _goldSphere.SetActive(false);
+        yield return new WaitForSeconds(1.5f);
+        _goldSphere.SetActive(true);
     }
 }
