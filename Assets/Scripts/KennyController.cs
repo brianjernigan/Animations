@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Security;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.XR;
 
 public class KennyController : MonoBehaviour
 {
@@ -12,15 +13,51 @@ public class KennyController : MonoBehaviour
 
     private float _moveSpeed = 2.5f;
     private float _rotateSpeed = 10f;
-    
-    public bool IsWalking { get; set; }
+
+    private bool IsWalking { get; set; }
+    private bool IsSneaking { get; set; }
+    private bool CanOpenDoor { get; set; }
 
     private Rigidbody _rb;
+
+    [SerializeField] private GameObject _doorTrigger;
 
     private void Awake()
     {
         _anim = GetComponent<Animator>();
         _rb = GetComponent<Rigidbody>();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.C) && !IsWalking)
+        {
+            Dance();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && !IsWalking)
+        {
+            Backflip();
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift) && IsWalking)
+        {
+            IsSneaking = true;
+        }
+        else
+        {
+            IsSneaking = false;
+        }
+
+        if (CanOpenDoor && Input.GetKeyDown(KeyCode.F) && !IsWalking)
+        {
+            _anim.SetTrigger("DoorOpen");
+            _dc.OpenDoor();
+            _doorTrigger.SetActive(false);
+            CanOpenDoor = false;
+        }
+        
+        HandleMovingAnims();
     }
 
     private void FixedUpdate()
@@ -46,16 +83,37 @@ public class KennyController : MonoBehaviour
         {
             IsWalking = false;
         }
-
-        _anim.SetBool("IsWalking", IsWalking);
     }
 
-    private void OnTriggerStay(Collider other)
+    private void HandleMovingAnims()
     {
-        if (other.gameObject.CompareTag("DoorTrigger") && Input.GetKeyDown(KeyCode.F) && !IsWalking)
+        _anim.SetBool("IsWalking", IsWalking);
+        _anim.SetBool("IsSneaking", IsSneaking);
+    }
+
+    private void Dance()
+    {
+        _anim.SetTrigger("ChickenDance");
+    }
+
+    private void Backflip()
+    {
+        _anim.SetTrigger("Backflip");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("DoorTrigger"))
         {
-            _anim.SetTrigger("DoorOpen");
-            _dc.OpenDoor();
+            CanOpenDoor = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("DoorTrigger"))
+        {
+            CanOpenDoor = true;
         }
     }
 }
